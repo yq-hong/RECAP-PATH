@@ -22,6 +22,14 @@ random.seed(42)
 def get_task_class(args):
     if args.task == 'BRACS':
         return tasks.BRACSBinaryTask(args.data_dir, args.max_threads, args.class0, args.class1)
+    elif args.task == 'BACH':
+        return tasks.BACHBinaryTask(
+            args.data_dir, args.max_threads, args.class0, args.class1
+        )
+    elif args.task == 'SICAPv2':
+        return tasks.SICAPv2BinaryTask(
+            args.data_dir, args.max_threads, args.class0, args.class1
+        )
     elif args.task == 'BRACS_multi':
         return tasks.BRACSMultiTask(args.data_dir, args.max_threads)
     else:
@@ -29,7 +37,11 @@ def get_task_class(args):
 
 
 def get_predictor(configs):
-    if configs['task'] == 'BRACS':
+    if (
+        configs['task'] == 'BRACS'
+        or configs['task'] == 'BACH'
+        or configs['task'] == 'SICAPv2'
+    ):
         return predictors.TwoClassPredictor(configs)
     elif configs['task'] == 'BRACS_multi':
         return predictors.MultiClassPredictor(configs)
@@ -59,7 +71,7 @@ def get_scorer(scorer):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', default='BRACS', choices=['BRACS', 'BRACS_multi'])
+    parser.add_argument('--task', default='BRACS', choices=['BRACS', 'BRACS_multi', 'BACH', 'SICAPv2'])
     parser.add_argument('--class0', default='N')
     parser.add_argument('--class1', default='IC')
     parser.add_argument('--model', default='gemini', choices=['gemini', 'gpt4o'])
@@ -158,7 +170,7 @@ if __name__ == '__main__':
         prompt_keys = list(attr_all.keys())
         candidates = prompt_keys[-4:]
     else:
-        candidates = [open(f'../prompts/BRACS_generate.md').read()]
+        candidates = [open(f'../prompts/{args.task}_generate.md').read()]
     if 'multi' in args.task:
         pred_prompt = open(f'../prompts/{args.task}.md').read()
     else:
