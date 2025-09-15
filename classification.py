@@ -21,10 +21,6 @@ def get_task_class(args):
         return tasks.SICAPv2BinaryTask(
             args.data_dir, args.max_threads, args.class0, args.class1
         )
-    elif args.task == "Gleason":
-        return tasks.GleasonBinaryTask(
-            args.data_dir, args.max_threads, args.class0, args.class1
-        )
     elif args.task == 'BRACS_multi':
         return tasks.BRACSMultiTask(args.data_dir, args.max_threads)
     else:
@@ -36,7 +32,6 @@ def get_predictor(configs):
         configs['task'] == 'BRACS' 
         or configs["task"] == "BACH"
         or configs["task"] == "SICAPv2"
-        or configs["task"] == "Gleason"
     ):
         return predictors.TwoClassPredictor(configs)
     elif configs['task'] == 'BRACS_multi':
@@ -80,7 +75,7 @@ def run_evaluate(predictor, prompt, exs, attributes_dict):
 
 def get_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--task', default='BRACS', choices=['BRACS', 'BRACS_multi'])
+    parser.add_argument('--task', default='BRACS', choices=['BRACS', 'BRACS_multi', 'BACH', 'SICAPv2'])
     parser.add_argument('--model', default='gemini')
     parser.add_argument('--out_num', default='0')
     parser.add_argument('--data_dir', default='file_names')
