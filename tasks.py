@@ -244,3 +244,458 @@ class BRACSMultiTask(BinaryClassificationTask):
             for ex in exs:
                 attrs[f"{ex['id']}"] = attr[f'{prompt}'][f'{ex}']
         return attrs
+
+
+class BACHBinaryTask(BinaryClassificationTask):
+    def __init__(self, data_dir, max_threads=1, class0="N", class1="I"):
+        super().__init__(data_dir, max_threads)
+        self.class0 = class0
+        self.class1 = class1
+        self.class2num = {"N": 0, "I": 1}
+
+    def stringify_prediction(self, pred):
+        class2name = {"N": "Normal", "I": "Invasive"}
+        num2classname = [class2name[self.class0], class2name[self.class1]]
+        return num2classname[pred]
+
+    def get_examples(self, mode):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 0,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+        with open(meta_path1, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 1,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+
+        return exs
+
+    def get_few_shot_examples(self, train_exs, n_shots=1, seed=42):
+        random.seed(seed)
+        exs = [[], []]
+        idxs = [[], []]
+
+        for i in range(len(train_exs)):
+            if train_exs[i]["label"] == 0:
+                idxs[0].append(i)
+            else:
+                idxs[1].append(i)
+
+        select0 = random.sample(idxs[0], n_shots)
+        select1 = random.sample(idxs[1], n_shots)
+        for idx in select0:
+            exs[0].append(train_exs[idx])
+        for idx in select1:
+            exs[1].append(train_exs[idx])
+
+        return exs
+
+    def get_even_exs(self, mode="train", n_exs=100):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count0 = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                if count0 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0}",
+                            "label": 0,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count0 += 1
+        count1 = 0
+        with open(meta_path1, "r") as file:
+            for line in file:
+                if count1 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0 + count1}",
+                            "label": 1,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count1 += 1
+
+        return exs
+    
+    def sample_per_class(self, data, n):
+        class0 = [item for item in data if item["label"] == 0]
+        class1 = [item for item in data if item["label"] == 1]
+
+        random.seed(42)
+        sampled_class0 = random.sample(class0, min(n, len(class0)))
+        sampled_class1 = random.sample(class1, min(n, len(class1)))
+
+        return sampled_class0 + sampled_class1
+
+    def get_attr(self, mode, prompt, exs, gpt_generator=None, generate=False, exp=2):
+        if generate:
+            attribute_cache = {}
+            attribute_cache[f"{prompt}"] = {}
+            attribute_cache = generator.parallel_generate(
+                gpt_generator, prompt, exs, attribute_cache, 16
+            )
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attribute_cache[f"{prompt}"][f"{ex}"]
+        else:
+            with open(
+                f"../prompt_optimization/{exp}_{mode}_attr.json",
+                "r",
+            ) as json_file:
+                attr = json.load(json_file)
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attr[f"{prompt}"][f"{ex}"]
+        return attrs
+
+
+class SICAPv2BinaryTask(BinaryClassificationTask):
+    def __init__(self, data_dir, max_threads=1, class0="N", class1="C"):
+        super().__init__(data_dir, max_threads)
+        self.class0 = class0
+        self.class1 = class1
+        self.class2num = {"N": 0, "C": 1}
+
+    def stringify_prediction(self, pred):
+        class2name = {"N": "Non-cancerous (NC)", "C": "Prostate cancer (G3, G4, G5)"}
+        num2classname = [class2name[self.class0], class2name[self.class1]]
+        return num2classname[pred]
+
+    def get_examples(self, mode):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 0,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+        with open(meta_path1, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 1,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+
+        return exs
+
+    def get_few_shot_examples(self, train_exs, n_shots=1, seed=42):
+        random.seed(seed)
+        exs = [[], []]
+        idxs = [[], []]
+
+        for i in range(len(train_exs)):
+            if train_exs[i]["label"] == 0:
+                idxs[0].append(i)
+            else:
+                idxs[1].append(i)
+
+        select0 = random.sample(idxs[0], n_shots)
+        select1 = random.sample(idxs[1], n_shots)
+        for idx in select0:
+            exs[0].append(train_exs[idx])
+        for idx in select1:
+            exs[1].append(train_exs[idx])
+
+        return exs
+
+    def get_even_exs(self, mode="train", n_exs=100):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count0 = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                if count0 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0}",
+                            "label": 0,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count0 += 1
+        count1 = 0
+        with open(meta_path1, "r") as file:
+            for line in file:
+                if count1 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0 + count1}",
+                            "label": 1,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count1 += 1
+
+        return exs
+
+    def sample_per_class(self, data, n):
+        class0 = [item for item in data if item["label"] == 0]
+        class1 = [item for item in data if item["label"] == 1]
+
+        random.seed(42)
+        sampled_class0 = random.sample(class0, min(n, len(class0)))
+        sampled_class1 = random.sample(class1, min(n, len(class1)))
+
+        return sampled_class0 + sampled_class1
+    
+    def sample_imbalance_per_class(self, data, n1, n2):
+        class0 = [item for item in data if item["label"] == 0]
+        class1 = [item for item in data if item["label"] == 1]
+
+        random.seed(42)
+        sampled_class0 = random.sample(class0, min(n1, len(class0)))
+        sampled_class1 = random.sample(class1, min(n2, len(class1)))
+
+        return sampled_class0 + sampled_class1
+
+    def get_attr(self, mode, prompt, exs, gpt_generator=None, generate=False, exp=2):
+        if generate:
+            attribute_cache = {}
+            attribute_cache[f"{prompt}"] = {}
+            attribute_cache = generator.parallel_generate(
+                gpt_generator, prompt, exs, attribute_cache, 16
+            )
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attribute_cache[f"{prompt}"][f"{ex}"]
+        else:
+            with open(
+                f"../prompt_optimization/{exp}_{mode}_attr.json",
+                "r",
+            ) as json_file:
+                attr = json.load(json_file)
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attr[f"{prompt}"][f"{ex}"]
+        return attrs
+
+
+class GleasonBinaryTask(BinaryClassificationTask):
+    def __init__(self, data_dir, max_threads=1, class0="N", class1="C"):
+        super().__init__(data_dir, max_threads)
+        self.class0 = class0
+        self.class1 = class1
+        self.class2num = {"N": 0, "C": 1}
+
+    def stringify_prediction(self, pred):
+        class2name = {"N": "Non-cancerous (NC)", "C": "Prostate cancer (G3, G4, G5)"}
+        num2classname = [class2name[self.class0], class2name[self.class1]]
+        return num2classname[pred]
+
+    def get_examples(self, mode):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 0,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+        with open(meta_path1, "r") as file:
+            for line in file:
+                exs.append(
+                    {
+                        "id": f"{count}",
+                        "label": 1,
+                        "img_path": os.path.join(
+                            "/Users/gaokuijun/APOPathology-main",
+                            line.strip(),
+                        ),
+                    }
+                )
+                count += 1
+
+        return exs
+
+    def get_few_shot_examples(self, train_exs, n_shots=1, seed=42):
+        random.seed(seed)
+        exs = [[], []]
+        idxs = [[], []]
+
+        for i in range(len(train_exs)):
+            if train_exs[i]["label"] == 0:
+                idxs[0].append(i)
+            else:
+                idxs[1].append(i)
+
+        select0 = random.sample(idxs[0], n_shots)
+        select1 = random.sample(idxs[1], n_shots)
+        for idx in select0:
+            exs[0].append(train_exs[idx])
+        for idx in select1:
+            exs[1].append(train_exs[idx])
+
+        return exs
+
+    def get_even_exs(self, mode="train", n_exs=100):
+        meta_path0 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class0]}_{self.class0}.txt"
+        )
+        meta_path1 = (
+            f"{self.data_dir}/{mode}_{self.class2num[self.class1]}_{self.class1}.txt"
+        )
+
+        exs = []
+        count0 = 0
+        with open(meta_path0, "r") as file:
+            for line in file:
+                if count0 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0}",
+                            "label": 0,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count0 += 1
+        count1 = 0
+        with open(meta_path1, "r") as file:
+            for line in file:
+                if count1 < n_exs:
+                    exs.append(
+                        {
+                            "id": f"{count0 + count1}",
+                            "label": 1,
+                            "img_path": os.path.join(
+                                "/home/sara/Desktop/apo_pathology/APOPathology-main",
+                                line.strip(),
+                            ),
+                        }
+                    )
+                count1 += 1
+
+        return exs
+
+    def sample_per_class(self, data, n):
+        class0 = [item for item in data if item["label"] == 0]
+        class1 = [item for item in data if item["label"] == 1]
+
+        random.seed(42)
+        sampled_class0 = random.sample(class0, min(n, len(class0)))
+        sampled_class1 = random.sample(class1, min(n, len(class1)))
+
+        return sampled_class0 + sampled_class1
+    
+    def sample_imbalance_per_class(self, data, n1, n2):
+        class0 = [item for item in data if item["label"] == 0]
+        class1 = [item for item in data if item["label"] == 1]
+
+        random.seed(42)
+        sampled_class0 = random.sample(class0, min(n1, len(class0)))
+        sampled_class1 = random.sample(class1, min(n2, len(class1)))
+
+        return sampled_class0 + sampled_class1
+
+    def get_attr(self, mode, prompt, exs, gpt_generator=None, generate=False, exp=2):
+        if generate:
+            attribute_cache = {}
+            attribute_cache[f"{prompt}"] = {}
+            attribute_cache = generator.parallel_generate(
+                gpt_generator, prompt, exs, attribute_cache, 16
+            )
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attribute_cache[f"{prompt}"][f"{ex}"]
+        else:
+            with open(
+                f"../prompt_optimization/{exp}_{mode}_attr.json",
+                "r",
+            ) as json_file:
+                attr = json.load(json_file)
+            attrs = {}
+            for ex in exs:
+                attrs[f"{ex['id']}"] = attr[f"{prompt}"][f"{ex}"]
+        return attrs
