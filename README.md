@@ -7,6 +7,14 @@
 #### Data Download
 https://www.bracs.icar.cnr.it/download/
 
+### BACH: BreAst Cancer Histology
+#### Data Download
+[https://www.bracs.icar.cnr.it/download/](https://iciar2018-challenge.grand-challenge.org/Dataset/)
+
+### SICAPv2: Prostate Whole Slide Images with Gleason Grades Annotations
+#### Data Download
+[https://www.bracs.icar.cnr.it/download/](https://data.mendeley.com/datasets/9xxm58dvs3/1)
+
 #### Preprocess
 To make sure all images are less than 20MB to satisfy the OpenAI requirements.
 For `datasets/BRACS/BRACS_RoI/latest_version/test/0_N`
@@ -39,13 +47,15 @@ python main_BRACS.py --reject_on_errors --task BRACS --diverse_init --diverse_ex
 
 For usage instructions. Some of the arguments include:
 
-* `--task`: Task name like 'BRACS', 'BRACS_multi'.
+* `--task`: Task name like 'BRACS', 'BRACS_multi', 'BACH', 'SICAPv2'.
 * `--data_dir`: Directory where the task data file resides.
 * `--diverse_init`: Whether to use diverse initial prompts from Phase I.
 * `--diverse_exp`: Phase I output name.
 * `--out`: Output name.
 * `--max_threads`: Maximum number of threads to be used.
 * `--val_score`: Whether to use validation set.
+* `--class0`: class 0 Name (Ex: N, DCIS)
+* `--class1`: class 1 Name (Ex: I, C, IC)
 
 ## After optimization evaluation
 ```
