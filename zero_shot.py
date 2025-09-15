@@ -13,11 +13,11 @@ import generator
 def get_task_class(args):
     if args.task == 'BRACS':
         return tasks.BRACSBinaryTask(args.data_dir, args.max_threads, args.class0, args.class1)
-    elif args.task == "BACH":
+    elif args.task == 'BACH':
         return tasks.BACHBinaryTask(
             args.data_dir, args.max_threads, args.class0, args.class1
         )
-    elif args.task == "SICAPv2":
+    elif args.task == 'SICAPv2':
         return tasks.SICAPv2BinaryTask(
             args.data_dir, args.max_threads, args.class0, args.class1
         )
@@ -30,8 +30,8 @@ def get_task_class(args):
 def get_predictor(configs):
     if (
         configs['task'] == 'BRACS'
-        or configs["task"] == "BACH"
-        or configs["task"] == "SICAPv2"
+        or configs['task'] == 'BACH'
+        or configs['task'] == 'SICAPv2'
     ):
         return predictors.TwoClassPredictor(configs)
     elif configs['task'] == 'BRACS_multi':
