@@ -11,5 +11,3 @@ BACH = """I'm trying to write a prompt used to generate description for the give
         The two types of breast tumors are: A. Normal, B. Invasive."""
 SICAPv2 = """I'm trying to write a prompt used to generate description for the given image, where the generated description can enhance the image zero-shot classification of whether the tissue is non-cancerous or contains prostate cancer in the prostate tissue images.
         The two types of categories are: A. Non-cancerous, B. Prostate cancer."""
-Gleason = """I'm trying to write a prompt used to generate description for the given image, where the generated description can enhance the image zero-shot classification of whether the tissue is non-cancerous or contains prostate cancer in the prostate tissue images.
-        The two types of categories are: A. Non-cancerous, B. Prostate cancer."""
