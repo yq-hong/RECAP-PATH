@@ -68,6 +68,10 @@ class ProTeGi(PromptOptimizer):
             gradient_prompt = apo_prompts.BRACS_N_IC
         elif self.opt['task'] == 'BRACS' and self.opt['class0'] == 'DCIS':
             gradient_prompt = apo_prompts.BRACS_DCIS_IC
+        elif self.opt['task'] == 'BACH' and self.opt['class0'] == 'N':
+            gradient_prompt = apo_prompts.BACH_N_I
+        elif self.opt['task'] == 'SICAPv2' and self.opt['class0'] == 'N':
+            gradient_prompt = apo_prompts.SICAPv2_N_C
         elif 'multi' in self.opt['task']:
             gradient_prompt = apo_prompts.BRACS_multi
         else:
@@ -101,6 +105,10 @@ class ProTeGi(PromptOptimizer):
             transformation_prompt = apo_prompts.BRACS_N_IC
         elif self.opt['task'] == 'BRACS' and self.opt['class0'] == 'DCIS':
             transformation_prompt = apo_prompts.BRACS_DCIS_IC
+        elif self.opt['task'] == 'BACH' and self.opt['class0'] == 'N':
+            transformation_prompt = apo_prompts.BACH_N_I
+        elif self.opt['task'] == 'SICAPv2' and self.opt['class0'] == 'N':
+            transformation_prompt = apo_prompts.SICAPv2_N_C
         elif 'multi' in self.opt['task']:
             transformation_prompt = apo_prompts.BRACS_multi
         else:
