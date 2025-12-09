@@ -1,6 +1,6 @@
-# RECAP-PATH (REasoning and Classification via Automated Prompting in PATHology images)
+# Paper: Adaptive Diagnostic Reasoning Framework for Pathology with Multimodal Large Language Models
 
-## Paper: Pathology Reasoning through Adaptive Multimodal-LLM Prompting
+## RECAP-PATH (REasoning and Classification via Automated Prompting in PATHology images)
 
 ## Dataset
 ### BRACS:  BReAst Carcinoma Subtyping
@@ -16,7 +16,7 @@ https://www.bracs.icar.cnr.it/download/
 [https://www.bracs.icar.cnr.it/download/](https://data.mendeley.com/datasets/9xxm58dvs3/1)
 
 #### Preprocess
-To make sure all images are less than 20MB to satisfy the OpenAI requirements.
+To make sure all images are less than 20MB to satisfy the OpenAI API requirements.
 For `datasets/BRACS/BRACS_RoI/latest_version/test/0_N`
 ```
 python compress.py --set test --class_dir 0_N
@@ -30,7 +30,7 @@ python img_file_name.py --set test --class_dir 0_N
 ## Baselines
 ### Zero shot
 ```
-python zero_shot.py --model gemini --task BRACS_multi --mode test --n_test 30 --out_num 1
+python zero_shot.py --model gemini --task BRACS --mode test --n_test 30 --out_num 1
 ```
 
 ## Phase-I: Optimizing Diversity
@@ -59,7 +59,17 @@ For usage instructions. Some of the arguments include:
 
 ## After optimization evaluation
 ```
-python classification.py --generate --task BRACS_multi --result_folder prompt_optimization --mode test --n_test 30 --exp 1 --prompt_idx 1 --out_num 1
+python classification.py --generate --task BRACS --result_folder prompt_optimization --mode test --n_test 30 --exp 1 --prompt_idx 1 --out_num 1
 ```
 
 * `--generate`: To generate new descriptions for images.
+
+### Cite
+```
+@article{hong2025adaptive,
+  title={Adaptive Diagnostic Reasoning Framework for Pathology with Multimodal Large Language Models},
+  author={Hong, Yunqi and Kao, Johnson and Edwards, Liam and Liu, Nein-Tzu and Huang, Chung-Yen and Oliveira-Kowaleski, Alex and Hsieh, Cho-Jui and Lin, Neil YC},
+  journal={arXiv preprint arXiv:2511.12008},
+  year={2025}
+}
+```
